@@ -1,0 +1,11 @@
+{
+  "name": "ai-query-chatbot-backend",
+  "version": "1.0.0",
+  "description": "Backend for the AI-Query-ChatBot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
