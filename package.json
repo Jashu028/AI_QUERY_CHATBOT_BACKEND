@@ -1,6 +1,7 @@
 {
   "name": "ai-query-chatbot-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Backend for the AI-Query-ChatBot",
   "main": "app.js",
   "scripts": {
@@ -8,7 +9,7 @@
     "dev": "nodemon app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Jashwanth Chandanala",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.8.2",
