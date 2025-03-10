@@ -10,3 +10,5 @@ router.post("/login", login);
 router.get("/check-auth", verifyToken, checkAuth);
 router.get("/logout", logout);
 router.get("/refresh", refresh)
+
+export default router;
