@@ -2,13 +2,13 @@ import express from "express";
 import {register, refresh, checkAuth, login, logout} from "../controller/userController.js";
 import { verifyToken } from "../util/token-verify.js";
 
-const router = express.Router();
+const userRouter = express.Router();
 
 
-router.post("/register", register);
-router.post("/login", login);
-router.get("/check-auth", verifyToken, checkAuth);
-router.get("/logout", logout);
-router.get("/refresh", refresh)
+userRouter.post("/register", register);
+userRouter.post("/login", login);
+userRouter.get("/check-auth", verifyToken, checkAuth);
+userRouter.get("/logout", verifyToken, logout);
+userRouter.get("/refresh", verifyToken, refresh);
 
-export default router;
+export default userRouter;

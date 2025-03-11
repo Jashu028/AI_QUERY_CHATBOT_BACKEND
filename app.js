@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import router from "./routes/userRoute.js";
+import userRouter from "./routes/userRoute.js";
+import productRoute from "./routes/productRoute.js";
 
 // import User from "./models/userModel.js";
 
@@ -12,7 +13,8 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173", credentials: true })); // ✅ Allow frontend requests
 app.use(cookieParser());
-app.use("/",router);
+app.use("/",userRouter);
+app.use("/products", productRoute);
 
 // const ACCESS_TOKEN_SECRET = "AIQUERYPROJECT";
 // const REFRESH_TOKEN_SECRET = "AIQUERYREFRESHPROJECT";
