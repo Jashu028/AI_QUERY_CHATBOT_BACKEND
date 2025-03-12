@@ -1,3 +1,4 @@
+import Cart from "../models/cartModel.js";
 import Product from "../models/productModel.js";
 
 
@@ -15,4 +16,71 @@ export const products = async (req, res) => {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
+};
+
+
+//Cart functionality
+
+//Add and Update Cart
+export const updateCart = async (req, res) => {
+  const userId = req.user.id;
+  const { addedToCart, updatedCount } = req.body;
+
+  try {
+    let cart = await Cart.findOne({ userId });
+    if (!cart) {
+      cart = new Cart({ userId, items: [] });
+    }
+
+    
+    const addedProductIds = addedToCart.map(item => item.productId);
+    const addedProducts = await Product.find({ productId: { $in: addedProductIds } });
+
+    const productIdMap = new Map(addedProducts.map(p => [p.productId, p._id]));
+
+    
+    addedToCart.forEach(({ productId, quantity }) => {
+      const existingItem = cart.items.find(i => i.productId === productId);
+      const product_Id = productIdMap.get(productId);
+
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else if (product_Id) {
+        cart.items.push({ productId, product_Id, quantity });
+      }
+    });
+    
+    
+    updatedCount.forEach(({ productId, quantity }) => {
+      const itemIndex = cart.items.findIndex(i => i.productId === productId);
+      if (itemIndex !== -1) {
+        if (quantity === 0) {
+          cart.items.splice(itemIndex, 1);
+        } else {
+          cart.items[itemIndex].quantity = quantity;
+        }
+      }
+    });
+    
+    await cart.save();
+    res.status(200).json({ message: "Cart updated successfully" });
+  } catch (error) {
+    console.error("Error updating cart:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export const getCart = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const cart = await Cart.findOne({ userId }).populate("items.product_Id");
+    if (!cart) {
+      return res.status(200).json({ items: [] });
+    }
+    res.status(200).json({ items: cart.items });
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
