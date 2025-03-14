@@ -5,8 +5,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRoute.js";
 import productRoute from "./routes/productRoute.js";
-
-// import User from "./models/userModel.js";
+import chatRoute from "./routes/chatRoute.js";
 
 dotenv.config();
 const app = express();
@@ -15,15 +14,12 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true })); // ✅ Al
 app.use(cookieParser());
 app.use("/",userRouter);
 app.use("/products", productRoute);
-
-// const ACCESS_TOKEN_SECRET = "AIQUERYPROJECT";
-// const REFRESH_TOKEN_SECRET = "AIQUERYREFRESHPROJECT";
+app.use("/chat", chatRoute);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-// ✅ Generate Tokens
 
 
 const PORT = process.env.PORT || 5000;
