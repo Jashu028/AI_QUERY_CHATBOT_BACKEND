@@ -1,9 +1,9 @@
-import Cart from "../models/cartModel.js";
-import Product from "../models/productModel.js";
+const Cart = require("../models/cartModel.js");
+const Product = require("../models/productModel.js");
 
 
 
-export const products = async (req, res) => {
+const products = async (req, res) => {
     try {
       const products = await Product.find().lean(); // ✅ Convert Mongoose documents to plain objects
       const formattedProducts = products.map((product) => ({
@@ -18,11 +18,18 @@ export const products = async (req, res) => {
     }
 };
 
+const product = async (req, res) => {
+  try {
+      const product = await Product.findOne({productId : req.params.productId}); //.populate('reviews.user', 'username')
+      if (!product) return res.status(404).json({ message: 'Product not found' });
 
-//Cart functionality
+      res.json(product);
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching product', error });
+  }
+};
 
-//Add and Update Cart
-export const updateCart = async (req, res) => {
+const updateCart = async (req, res) => {
   const userId = req.user.id;
   const { addedToCart, updatedCount } = req.body;
 
@@ -71,7 +78,7 @@ export const updateCart = async (req, res) => {
 };
 
 
-export const getCart = async (req, res) => {
+const getCart = async (req, res) => {
   const userId = req.user.id;
   try {
     const cart = await Cart.findOne({ userId }).populate("items.product_Id");
@@ -85,10 +92,7 @@ export const getCart = async (req, res) => {
   }
 };
 
-
-// Favortites products
-
-export const getFavorites = async (req, res) => {
+const getFavorites = async (req, res) => {
   try {
     const userId = req.user.id;
     const favorites = await Product.find({ favorites: userId });
@@ -98,7 +102,7 @@ export const getFavorites = async (req, res) => {
   }
 };
 
-export const addFavorite = async (req, res) => {
+const addFavorite = async (req, res) => {
   try {
     const userId = req.user.id;
     const { productId } = req.body;
@@ -117,7 +121,7 @@ export const addFavorite = async (req, res) => {
   }
 };
 
-export const removeFavorite = async (req, res) => {
+const removeFavorite = async (req, res) => {
   try {
     const userId = req.user.id;
     const { productId } = req.params;
@@ -133,3 +137,13 @@ export const removeFavorite = async (req, res) => {
     res.status(500).json({ message: "Error removing favorite" });
   }
 };
+
+module.exports = {
+  products,
+  product,
+  getCart,
+  updateCart,
+  addFavorite,
+  getFavorites,
+  removeFavorite
+}

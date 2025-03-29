@@ -1,20 +1,27 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
-import userRouter from "./routes/userRoute.js";
-import productRoute from "./routes/productRoute.js";
-import chatRoute from "./routes/chatRoute.js";
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
+const userRoute = require('./routes/userRoute.js');
+const productRoute = require('./routes/productRoute.js');
+const chatRoute = require('./routes/chatRoute.js');
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173", credentials: true })); // ✅ Allow frontend requests
 app.use(cookieParser());
-app.use("/",userRouter);
+app.use("/",userRoute);
 app.use("/products", productRoute);
 app.use("/chat", chatRoute);
+
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(middleware.route.path);
+  }
+});
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))

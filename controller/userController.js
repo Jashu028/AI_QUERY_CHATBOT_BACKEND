@@ -1,14 +1,13 @@
-import User from "../models/userModel.js";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
+const User = require("../models/userModel.js");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const bcrypt = require("bcryptjs");
 dotenv.config();
 
 const generateAccessToken = (user) => jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
 const generateRefreshToken = (user) => jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "5m" });
 
-// ✅ User Registration
-export const register =  async (req, res) => {
+const register =  async (req, res) => {
   try {
     const { email, password, name } = req.body;
     const existingUser = await User.findOne({ email });
@@ -24,8 +23,7 @@ export const register =  async (req, res) => {
   }
 };
 
-// ✅ User Login
-export const login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -56,8 +54,7 @@ export const login = async (req, res) => {
   }
 };
 
-// ✅ Refresh Token API
-export const refresh =  (req, res) => {
+const refresh =  (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) return res.status(403).json({ message: "Refresh token missing" });
 
@@ -76,13 +73,21 @@ export const refresh =  (req, res) => {
   });
 };
 
-// ✅ Logout API
-export const logout =  (req, res) => {
+const logout =  (req, res) => {
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-export const checkAuth = (req, res) => {
+const checkAuth = (req, res) => {
   res.status(200).json({ user: req.user });
 };
+
+
+module.exports = {
+  register,
+  login,
+  refresh,
+  logout,
+  checkAuth
+}
