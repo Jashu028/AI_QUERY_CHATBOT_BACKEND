@@ -1,10 +1,10 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 dotenv.config();
 
 
 
-export const verifyToken = (req, res, next) => {
+module.exports = verifyToken = (req, res, next) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 

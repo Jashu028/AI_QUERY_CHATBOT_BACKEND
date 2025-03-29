@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const CartSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -11,4 +11,4 @@ const CartSchema = new mongoose.Schema({
   ],
 });
 
-export default mongoose.model("Cart", CartSchema);
+module.exports = mongoose.model("Cart", CartSchema);
