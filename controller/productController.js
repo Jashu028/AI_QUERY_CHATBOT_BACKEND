@@ -1,5 +1,7 @@
 const Cart = require("../models/cartModel.js");
 const Product = require("../models/productModel.js");
+const Review = require("../models/reviewModel.js");
+const User = require("../models/userModel.js");
 
 
 
@@ -20,14 +22,21 @@ const products = async (req, res) => {
 
 const product = async (req, res) => {
   try {
-      const product = await Product.findOne({productId : req.params.productId}); //.populate('reviews.user', 'username')
-      if (!product) return res.status(404).json({ message: 'Product not found' });
+    const product = await Product.findOne({ productId: req.params.productId });
 
-      res.json(product);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" }); // Stops execution
+    }
+
+    const isFavorite = req.user.id !== "guest" && product.favorites.includes(req.user.id);
+
+    return res.json({ ...product.toObject(), favourite: isFavorite }); // Use `return` to stop execution
   } catch (error) {
-      res.status(500).json({ message: 'Error fetching product', error });
+    console.error("Error fetching product:", error);
+    return res.status(500).json({ message: "Error fetching product", error });
   }
 };
+
 
 const updateCart = async (req, res) => {
   const userId = req.user.id;
@@ -138,6 +147,42 @@ const removeFavorite = async (req, res) => {
   }
 };
 
+const addReview = async(req, res) => {
+    try {
+      const {rating, comment} = req.body;
+      const {productId} = req.params;
+    
+      const user = await User.findById(req.user.id);
+
+      if(!user)
+        return res.status(401).json({message: "Unauthorized"});
+
+      const product = await Product.findOne({productId});
+
+      if(!product)
+        return res.status(404).json({message: "Product Not Found"});
+
+      const review = await Review.create({
+        product_Id: product._id,
+        productId,
+        userId: user._id,
+        userName: user.name,
+        rating,
+        comment
+      });
+
+      product.reviews.push(review._id);
+      await product.save();
+      const reviews = { id : review._id, userId: review.userId, userName: "you", rating: review.rating, comment: review.comment, createdAt: review.createdAt};
+      return res.status(201).json({ message: "Review Created Successfully", reviews });
+    } catch (error) {
+      console.error("Error adding review:", error);
+      res.status(500).json({ message: "Error adding review" });
+    }
+};
+
+
+
 module.exports = {
   products,
   product,
@@ -145,5 +190,6 @@ module.exports = {
   updateCart,
   addFavorite,
   getFavorites,
-  removeFavorite
+  removeFavorite,
+  addReview
 }

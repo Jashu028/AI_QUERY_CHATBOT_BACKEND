@@ -1,5 +1,5 @@
 const express = require("express");
-const verifyToken = require("../util/token-verify.js");
+const {verifyToken} = require("../util/token-verify.js");
 const { history, message } = require("../controller/chatController.js");
 
 const chatRoute = express.Router();
