@@ -181,6 +181,37 @@ const addReview = async(req, res) => {
     }
 };
 
+const getProductReviews = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productId } = req.params;
+
+    const product = await Product.findOne({ productId }).populate({
+      path: 'reviews',
+      options: { sort: { createdAt: -1 } }, // Optional: latest first
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // console.log(String(review.userId) === String(userId) ? "You" : review.userName);
+    const reviews = product.reviews.map((review) => ({
+      id: review._id,
+      userId: review.userId,
+      userName: String(review.userId) === String(userId) ? "You" : review.userName,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt
+    }));
+
+    return res.status(200).json({ reviews });
+  } catch (error) {
+    console.error("Error retrieving reviews:", error);
+    return res.status(500).json({ message: "Error retrieving product reviews" });
+  }
+};
+
 
 
 module.exports = {
@@ -191,5 +222,6 @@ module.exports = {
   addFavorite,
   getFavorites,
   removeFavorite,
-  addReview
+  addReview,
+  getProductReviews
 }
