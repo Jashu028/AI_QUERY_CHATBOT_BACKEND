@@ -1,7 +1,7 @@
 const Chat = require('../models/chatModel.js');
 const dotenv = require('dotenv');
 const {extractAndFetchProducts} = require('../Prompt/queryPrompt.js');
-const { GoogleGenerativeAI } = require('@google/generative-ai'); // demo implmentation using Gemini API before using OPENAI API
+const OpenAI = require('openai');
 
 dotenv.config();
 
@@ -24,13 +24,22 @@ const message = async (req, res) => {
 
     console.log("🔹 Prompt for ChatGPT API:\n", prompt);
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const client = new OpenAI({
+      apikey: process.env.OPENAI_API_KEY,
+    });
 
-    const result = await model.generateContent(prompt);
-    console.log(result.response.text());
+    const completion = await client.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+            {
+                role: "user",
+                content: prompt,
+            },
+        ],
+        max_tokens: 500,
+    });
 
-    const botReply = result.response.text()
+    const botReply = completion.choices[0].message.content;
     console.log("🤖 ChatGPT Response:", botReply);
 
     const botMessage = { sender: "bot", content: botReply };

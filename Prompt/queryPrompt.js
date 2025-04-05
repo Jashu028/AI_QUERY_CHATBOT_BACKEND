@@ -6,15 +6,13 @@ let isPreviousQuery = false;
 let isPriceConditionMore = false;
 let previousPriceCondition = null;
 
-function generatePrompt(query, matchedProducts, searchQuery, isMoreQuery) {
+function generatePrompt(query, matchedProducts, isMoreQuery) {
     let prompt = `# Role:
 You are a helpful shopping assistant for an online store. Your task is to respond to user queries about products in an engaging and informative way. Response to the User query based on the informative the system provide and response should be based on that directly to the User.
 
 # User Query:
 "${query}"
 
-# System Action:
-Extracted search keywords: ${searchQuery}
 ${isMoreQuery ? "User has requested more products." : "Searching database for matching products."}
 
 # Retrieved Products:
@@ -24,7 +22,7 @@ if (matchedProducts.length > 0) {
             prompt += `Matched Products:\n${matchedProducts
                 .map((p) => `-ProductId: ${p.productId} - ${p.name}: $${p.price}, Rating: ${p.rating}`)
                 .join("\n")}\n\n`;
-            prompt += `Generate a friendly and engaging response summarizing the new product recommendations. Each product name should be a clickable hyperlink leading to {localhost:5173/product/:productId}. Briefly highlight their key features, such as price, rating, and unique selling points, in a conversational tone that feels natural and helpful. Format the response using markdown so that the links are properly clickable.`;
+            prompt += `Generate a friendly and engaging response summarizing the new product recommendations. Each product name should be a clickable hyperlink leading to {${process.env.FRONTEND_BASE_URL}/product/:productId}. Briefly highlight their key features, such as price, rating, and unique selling points, in a conversational tone that feels natural and helpful. Format the response using markdown so that the links are properly clickable.`;
         } else {
         prompt += `No matching products were found.
 # Response:
@@ -95,7 +93,7 @@ async function extractAndFetchProducts(query, userId) {
 
             previousProducts.set(userId, [...excludedProductIds, ...matchedProducts.map(p => p._id.toString())]);
 
-            const prompt = generatePrompt(query, matchedProducts, "more products", true);
+            const prompt = generatePrompt(query, matchedProducts, true);
             return prompt + "\n\nIf you're interested in even more products, just type 'more products'!";
         }
 
@@ -109,8 +107,8 @@ async function extractAndFetchProducts(query, userId) {
             isPreviousQuery = false;
             const allMatchedProducts = await Product.find(priceCondition);
             previousPriceCondition = priceCondition;
-            isPriceConditionMore = allMatchedProducts.length > 5;
-            matchedProducts = allMatchedProducts.slice(0, 6);
+            isPriceConditionMore = allMatchedProducts.length > 4;
+            matchedProducts = allMatchedProducts.slice(0, 5);
         }
 
         if (matchedProducts.length === 0 && hasProductKeyword) {
@@ -127,9 +125,9 @@ async function extractAndFetchProducts(query, userId) {
             previousProducts.delete(firstKey);
         }
 
-        const prompt = generatePrompt(query, matchedProducts, extractedNouns.join(" "), false);
+        const prompt = generatePrompt(query, matchedProducts, false);
         
-        if (hasProductKeyword || (isPriceConditionMore && priceCondition)) {
+        if ((hasProductKeyword && matchedProducts.length >= 5) || (isPriceConditionMore && priceCondition)) {
             return prompt + "\n\nIf you're interested in more products, just type 'more products'!";
         }
 
