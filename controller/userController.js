@@ -18,8 +18,8 @@ const sendverifymail = async(name, email, token)=>{
       secure : false,
       requireTLS : true,
       auth:{
-        user : process.env.usermail,
-        pass : process.env.userpassword 
+        user : process.env.USERMAIL,
+        pass : process.env.USERPASSWORD 
       }
     });
 
@@ -42,7 +42,7 @@ const sendverifymail = async(name, email, token)=>{
   </div>
 `;
     const mailoptions = {
-      from : process.env.usermail,
+      from : process.env.USERMAIL,
       to : email,
       subject : 'For Verification mail',
       html : htmlcontent,
@@ -70,8 +70,8 @@ const sendResetLink = async(name, email, resetLink)=>{
       secure : false,
       requireTLS : true,
       auth:{
-        user : process.env.usermail,
-        pass : process.env.userpassword 
+        user : process.env.USERMAIL,
+        pass : process.env.USERPASSWORD 
       }
     });
 
@@ -94,7 +94,7 @@ const sendResetLink = async(name, email, resetLink)=>{
   </div>
 `;
     const mailoptions = {
-      from : process.env.usermail,  //: sender username,
+      from : process.env.USERMAIL,
       to : email,
       subject : 'For Reset Password mail',
       html : htmlcontent,
