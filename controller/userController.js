@@ -5,8 +5,8 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require('nodemailer');
 dotenv.config();
 
-const generateAccessToken = (user) => jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
-const generateRefreshToken = (user) => jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "5m" });
+const generateAccessToken = (user) => jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+const generateRefreshToken = (user) => jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
 const generateVerificationToken = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
 
@@ -178,14 +178,14 @@ const login = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "Strict",
-    maxAge: 60 * 60 * 1000,
+    maxAge: 15 * 60 * 1000,
   });
   
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "Strict",
-    maxAge: 59 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
 
