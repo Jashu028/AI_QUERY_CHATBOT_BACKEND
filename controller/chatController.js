@@ -22,8 +22,6 @@ const message = async (req, res) => {
     const userMessage = { sender: "user", content };
     chat.messages.push(userMessage);
 
-    console.log("🔹 Prompt for ChatGPT API:\n", prompt);
-
     const client = new OpenAI({
       apikey: process.env.OPENAI_API_KEY,
     });
@@ -40,7 +38,6 @@ const message = async (req, res) => {
     });
 
     const botReply = completion.choices[0].message.content;
-    console.log("🤖 ChatGPT Response:", botReply);
 
     const botMessage = { sender: "bot", content: botReply };
     chat.messages.push(botMessage);
@@ -49,7 +46,7 @@ const message = async (req, res) => {
 
     return res.status(200).json(botMessage);
   } catch (error) {
-    console.error("❌ Error Processing Message:", error);
+    console.error("Error Processing Message:", error);
     res.status(500).json({ message: "Error processing message" });
   }
 };
