@@ -20,7 +20,6 @@ const verifyToken = (req, res, next) => {
 const verifyOptionalToken = (req, res, next) => {
   const token = req.cookies.accessToken;
 
-  // Ensure req.user is always an object
   req.user = { id: "guest" };
 
   if (!token) {
@@ -32,7 +31,7 @@ const verifyOptionalToken = (req, res, next) => {
       return next();
     }
 
-    req.user = decoded; // Assign authenticated user data
+    req.user = decoded;
     next();
   });
 };

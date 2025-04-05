@@ -7,10 +7,10 @@ const User = require("../models/userModel.js");
 
 const products = async (req, res) => {
     try {
-      const products = await Product.find().lean(); // ✅ Convert Mongoose documents to plain objects
+      const products = await Product.find().lean();
       const formattedProducts = products.map((product) => ({
         ...product,
-        id: product._id.toString(), // ✅ Convert `_id` to `id`
+        id: product._id.toString(),
       }));
   
       res.json(formattedProducts);
@@ -25,12 +25,12 @@ const product = async (req, res) => {
     const product = await Product.findOne({ productId: req.params.productId });
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" }); // Stops execution
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const isFavorite = req.user.id !== "guest" && product.favorites.includes(req.user.id);
 
-    return res.json({ ...product.toObject(), favourite: isFavorite }); // Use `return` to stop execution
+    return res.json({ ...product.toObject(), favourite: isFavorite });
   } catch (error) {
     console.error("Error fetching product:", error);
     return res.status(500).json({ message: "Error fetching product", error });
@@ -188,14 +188,13 @@ const getProductReviews = async (req, res) => {
 
     const product = await Product.findOne({ productId }).populate({
       path: 'reviews',
-      options: { sort: { createdAt: -1 } }, // Optional: latest first
+      options: { sort: { createdAt: -1 } },
     });
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // console.log(String(review.userId) === String(userId) ? "You" : review.userName);
     const reviews = product.reviews.map((review) => ({
       id: review._id,
       userId: review.userId,

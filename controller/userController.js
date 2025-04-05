@@ -18,8 +18,8 @@ const sendverifymail = async(name, email, token)=>{
       secure : false,
       requireTLS : true,
       auth:{
-        user : process.env.usermail,
-        pass : process.env.userpassword 
+        user : process.env.USERMAIL,
+        pass : process.env.USERPASSWORD 
       }
     });
 
@@ -42,7 +42,7 @@ const sendverifymail = async(name, email, token)=>{
   </div>
 `;
     const mailoptions = {
-      from : process.env.usermail,  //: sender username,
+      from : process.env.USERMAIL,
       to : email,
       subject : 'For Verification mail',
       html : htmlcontent,
@@ -70,8 +70,8 @@ const sendResetLink = async(name, email, resetLink)=>{
       secure : false,
       requireTLS : true,
       auth:{
-        user : process.env.usermail,
-        pass : process.env.userpassword 
+        user : process.env.USERMAIL,
+        pass : process.env.USERPASSWORD 
       }
     });
 
@@ -89,12 +89,12 @@ const sendResetLink = async(name, email, resetLink)=>{
          border-radius: 5px;
          font-weight: bold;
          margin-top: 20px;">
-      Verify Your Email
+      Reset Password
     </a>
   </div>
 `;
     const mailoptions = {
-      from : process.env.usermail,  //: sender username,
+      from : process.env.USERMAIL,
       to : email,
       subject : 'For Reset Password mail',
       html : htmlcontent,
@@ -118,16 +118,13 @@ const register = async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
-    // 🔍 Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(401).json({ error: "User already exists" });
     }
 
-    // 🔒 Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🆕 Create and save new user
     const newUser = new User({ name, email, password: hashedPassword });
     const user = await newUser.save();
 
@@ -135,9 +132,8 @@ const register = async (req, res) => {
       return res.status(404).json({ error: "Registration has failed!" });
     }
 
-    // 📩 Generate verification token and send email
     const token = generateVerificationToken(user._id);
-    await sendverifymail(name, email, token); // Make sure this is async-safe
+    await sendverifymail(name, email, token);
 
     return res.status(201).json({
       message: "Your registration has been successful, Please verify your Email",
@@ -279,7 +275,7 @@ const refresh =  (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 60 * 1000, // 1 min
+      maxAge: 60 * 1000,
     });
 
     res.json({ message: "Token refreshed" });

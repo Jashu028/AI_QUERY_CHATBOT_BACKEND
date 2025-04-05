@@ -10,7 +10,7 @@ const chatRoute = require('./routes/chatRoute.js');
 dotenv.config();
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: process.env.FRONTEND_BASE_URL, credentials: true })); // ✅ Allow frontend requests
+app.use(cors({ origin: process.env.FRONTEND_BASE_URL, credentials: true }));
 app.use(cookieParser());
 app.use("/",userRoute);
 app.use("/products", productRoute);
