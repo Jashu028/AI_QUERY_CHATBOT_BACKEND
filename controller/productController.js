@@ -314,9 +314,10 @@ const placeOrder = async (req, res) => {
 
     
     await Cart.findOneAndUpdate(
-      { userId: userId },
-      { $set: { items: [] } }
-    );
+      { userId },
+      { $set: { items: [] } },
+      { new: true }
+    );    
     
     sendOrdermail(user.name, user.email, orderPlaced.orderId);
     
