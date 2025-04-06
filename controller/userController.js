@@ -147,8 +147,12 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
     const user = await User.findOne({ email });
+
+    if(user.role !== role){
+      return res.status(403).json({error: "Unauthorized"});
+    }
 
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -164,11 +168,13 @@ const login = async (req, res) => {
     }
 
     const accessToken = generateAccessToken({
+      role: user.role,
       id: user.id,
       name: user.name,
       email: user.email,
     });
     const refreshToken = generateRefreshToken({
+      role: user.role,
       id: user.id,
       name: user.name,
       email: user.email,
@@ -191,6 +197,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       user: {
+        role: user.role,
         id: user.id,
         name: user.name,
         email: user.email,
@@ -271,7 +278,7 @@ const refresh =  (req, res) => {
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: "Invalid refresh token" });
 
-    const newAccessToken = generateAccessToken({ id: user.id, name: user.name, email: user.email });
+    const newAccessToken = generateAccessToken({ role: user.role, id: user.id, name: user.name, email: user.email });
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

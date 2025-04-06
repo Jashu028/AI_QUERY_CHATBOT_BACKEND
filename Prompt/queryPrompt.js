@@ -8,7 +8,6 @@ let isPriceConditionMore = false;
 let previousPriceCondition = null;
 
 
-// ✅ Enhanced handleOrderQuery to support returns, refunds, and order inquiries
 async function handleOrderQuery(query, orderId, userId) {
   const doc = nlp(query);
   const matchedOrderId = query.match(/(?:order\s*id[:\s]*)?([a-zA-Z0-9]{10})/i);
@@ -32,7 +31,6 @@ You are a helpful shopping assistant for an online store. Your task is to respon
 
 #System:`;
 
-    // 🔹 1. Try to fetch specific order by ID
     if (finalOrderId) {
       order = await Order.findOne({ orderId: finalOrderId, userId })
         .populate('products.product_Id', 'name image');
@@ -44,7 +42,6 @@ You are a helpful shopping assistant for an online store. Your task is to respon
       return formatSingleOrderResponse(prompt, order, query);
     }
 
-    // 🔹 2. Check if asking for recent order
     if (isRecentOrder) {
       order = await Order.findOne({ userId }).sort({ createdAt: -1 })
         .populate('products.product_Id', 'name image');
@@ -56,12 +53,10 @@ You are a helpful shopping assistant for an online store. Your task is to respon
       return formatSingleOrderResponse(prompt, order, query);
     }
 
-    // 🔹 3. General order-related query — show all
     if (mentionsOrder || mentionsReturn || mentionsRefund) {
       return await returnAllOrdersFallback(prompt, userId);
     }
 
-    // 🛑 If not order-related, fallback
     return `${prompt}\n\nUnable to determine intent. Politely ask the user to clarify their question and mention available support like product details, orders, returns, and refunds.`;
   } catch (err) {
     console.error("Error in handleOrderQuery:", err);
@@ -109,7 +104,6 @@ async function returnAllOrdersFallback(prompt, userId) {
 }
 
 
-// ✅ Optimized handlePolicyQuery with structured prompt
 function handlePolicyQuery(query) {
   const lower = query.toLowerCase();
   let prompt = `# Role:
