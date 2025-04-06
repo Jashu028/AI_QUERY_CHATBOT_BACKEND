@@ -312,13 +312,14 @@ const placeOrder = async (req, res) => {
 
     const orderPlaced = await order.save();
 
-    sendOrdermail(user.name, user.email, orderPlaced.orderId);
-
+    
     await Cart.findOneAndUpdate(
       { userId: userId },
       { $set: { items: [] } }
     );
-
+    
+    sendOrdermail(user.name, user.email, orderPlaced.orderId);
+    
     return res.status(201).json({ message: "Order placed successfully"});
   } catch (error) {
     console.error("Order placement failed:", error);
