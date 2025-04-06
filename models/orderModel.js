@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
-// 🔧 Custom function to generate 10-character alphanumeric orderId
 function generateShortOrderId() {
   const uuid = uuidv4().replace(/-/g, '');
   const shortId = parseInt(uuid.slice(0, 12), 16).toString(36);

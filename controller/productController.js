@@ -3,8 +3,70 @@ const Product = require("../models/productModel.js");
 const Review = require("../models/reviewModel.js");
 const User = require("../models/userModel.js");
 const Order = require("../models/orderModel.js");
+const nodemailer = require('nodemailer');
 
+const sendOrdermail = async(name, email, orderId)=>{
+  try {    
+    const transporter = nodemailer.createTransport({
+      host : 'smtp.gmail.com',
+      port : 587,
+      secure : false,
+      requireTLS : true,
+      auth:{
+        user : process.env.USERMAIL,
+        pass : process.env.USERPASSWORD 
+      }
+    });
 
+    const htmlcontent = `
+    <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+      <h2 style="color: #333;">Thank You for Your Order, ${name}!</h2>
+      <p style="font-size: 16px; color: #555;">
+        Your order has been placed successfully. <br/>
+        <strong>Order ID:</strong> ${orderId}
+      </p>
+      <p style="font-size: 16px; color: #555;">
+        You can view your order details by clicking the button below:
+      </p>
+      <a href="${process.env.FRONTEND_BASE_URL}/my-orders" 
+         style="
+           display: inline-block;
+           padding: 12px 24px;
+           color: #fff;
+           background-color: #007bff;
+           text-decoration: none;
+           border-radius: 8px;
+           font-size: 16px;
+           margin-top: 20px;
+           font-weight: bold;">
+        View My Orders
+      </a>
+      <p style="margin-top: 30px; font-size: 14px; color: #999;">
+        If you did not place this order, please contact our support team immediately.
+      </p>
+    </div>
+  `;
+  
+    const mailoptions = {
+      from : process.env.USERMAIL,
+      to : email,
+      subject : 'For Order Placed Mail',
+      html : htmlcontent,
+    };
+
+    transporter.sendMail(mailoptions, (error,info)=>{
+      if(error){
+        console.log(error);
+      }
+      else{
+        console.log('Email has been sent '+info.response);
+      }
+    });
+
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 
 const products = async (req, res) => {
     try {
@@ -217,11 +279,16 @@ const placeOrder = async (req, res) => {
     const userId = req.user.id;
     const { items, totalAmount } = req.body;
 
+    const user = await User.findById(userId);
+
+    if(!user){
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items to place an order." });
     }
 
-    // Step 1: Create order products array (with amount = quantity * price at order time)
     const orderProducts = await Promise.all(
       items.map(async (item) => {
         const product = await Product.findOne({productId: item.productId});
@@ -237,16 +304,16 @@ const placeOrder = async (req, res) => {
       })
     );
 
-    // Step 2: Create the Order
     const order = new Order({
       userId,
       products: orderProducts,
       totalAmount,
     });
 
-    await order.save();
+    const orderPlaced = await order.save();
 
-    // Step 3: Clear user's cart
+    sendOrdermail(user.name, user.email, orderPlaced.orderId);
+
     await Cart.findOneAndUpdate(
       { userId: userId },
       { $set: { items: [] } }

@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const userRoute = require('./routes/userRoute.js');
 const productRoute = require('./routes/productRoute.js');
 const chatRoute = require('./routes/chatRoute.js');
+const adminRoute = require("./routes/adminRoute.js");
 
 dotenv.config();
 const app = express();
@@ -13,20 +14,13 @@ app.use(express.json());
 app.use(cors({
   origin: process.env.FRONTEND_BASE_URL,
   credentials: true,
-  // methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  // allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.use(cookieParser());
 app.use("/",userRoute);
 app.use("/products", productRoute);
 app.use("/chat", chatRoute);
-
-// app._router.stack.forEach((middleware) => {
-//   if (middleware.route) {
-//     console.log(middleware.route.path);
-//   }
-// });
+app.use("/admin", adminRoute);
 
 
 mongoose.connect(process.env.MONGO_URI)
