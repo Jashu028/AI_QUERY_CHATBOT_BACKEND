@@ -1,6 +1,6 @@
 const Chat = require('../models/chatModel.js');
 const dotenv = require('dotenv');
-const {extractAndFetchProducts} = require('../Prompt/queryPrompt.js');
+const {handleChatbotQuery} = require('../Prompt/queryPrompt.js');
 const OpenAI = require('openai');
 
 dotenv.config();
@@ -18,7 +18,8 @@ const message = async (req, res) => {
       chat = new Chat({ userId, messages: [] });
     }
 
-    const prompt = await extractAndFetchProducts(content, userId);
+    const prompt = await handleChatbotQuery(content, userId);
+    console.log(prompt)
     const userMessage = { sender: "user", content };
     chat.messages.push(userMessage);
 
@@ -38,7 +39,7 @@ const message = async (req, res) => {
     });
 
     const botReply = completion.choices[0].message.content;
-
+    console.log(botReply)
     const botMessage = { sender: "bot", content: botReply };
     chat.messages.push(botMessage);
 

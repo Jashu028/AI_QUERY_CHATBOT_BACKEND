@@ -2,6 +2,7 @@ const Cart = require("../models/cartModel.js");
 const Product = require("../models/productModel.js");
 const Review = require("../models/reviewModel.js");
 const User = require("../models/userModel.js");
+const Order = require("../models/orderModel.js");
 
 
 
@@ -211,6 +212,110 @@ const getProductReviews = async (req, res) => {
   }
 };
 
+const placeOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { items, totalAmount } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "No items to place an order." });
+    }
+
+    // Step 1: Create order products array (with amount = quantity * price at order time)
+    const orderProducts = await Promise.all(
+      items.map(async (item) => {
+        const product = await Product.findOne({productId: item.productId});
+        if (!product) {
+          throw new Error(`Product not found: ${item.productId}`);
+        }
+        return {
+          product_Id: product._id,
+          productId: product.productId,
+          quantity: item.quantity,
+          amount: product.price * item.quantity,
+        };
+      })
+    );
+
+    // Step 2: Create the Order
+    const order = new Order({
+      userId,
+      products: orderProducts,
+      totalAmount,
+    });
+
+    await order.save();
+
+    // Step 3: Clear user's cart
+    await Cart.findOneAndUpdate(
+      { userId: userId },
+      { $set: { items: [] } }
+    );
+
+    return res.status(201).json({ message: "Order placed successfully"});
+  } catch (error) {
+    console.error("Order placement failed:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getMyOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const orders = await Order.find({ userId })
+      .populate('products.product_Id', 'name image price')
+      .sort({ createdAt: -1 });
+
+    const formattedOrders = orders.map((order) => ({
+      _id: order._id,
+      orderId: order.orderId,
+      orderStatus: order.orderStatus,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt,
+      returnRequested: order.returnRequested,
+      returnStatus: order.returnStatus,
+      returnReason: order.returnReason,
+      refundAmount: order.refundAmount,
+      refundProcessed: order.refundProcessed,
+      products: order.products.map((p) => ({
+        productId: p.productId,
+        quantity: p.quantity,
+        amount: p.product_Id?.price,
+        image: p.product_Id?.image,
+        name: p.product_Id?.name,
+      })),
+    }));
+
+    res.status(200).json({ orders: formattedOrders });
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    res.status(500).json({ error: 'Something went wrong while fetching orders' });
+  }
+};
+
+const productReturn =  async (req, res) => {
+  const { orderId } = req.params;
+  const { reason } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const order = await Order.findOne({ orderId, userId });
+
+    if (!order) return res.status(404).json({ error: "Order not found" });
+    if (order.returnRequested) return res.status(400).json({ error: "Return already requested" });
+
+    order.returnRequested = true;
+    order.returnStatus = "Requested";
+    order.returnReason = reason;
+
+    await order.save();
+    res.json({ message: "Return request submitted successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 
 module.exports = {
@@ -222,5 +327,8 @@ module.exports = {
   getFavorites,
   removeFavorite,
   addReview,
-  getProductReviews
+  getProductReviews, 
+  placeOrder,
+  getMyOrders,
+  productReturn
 }
