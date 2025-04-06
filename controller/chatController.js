@@ -19,7 +19,6 @@ const message = async (req, res) => {
     }
 
     const prompt = await handleChatbotQuery(content, userId);
-    console.log(prompt)
     const userMessage = { sender: "user", content };
     chat.messages.push(userMessage);
 
@@ -39,7 +38,6 @@ const message = async (req, res) => {
     });
 
     const botReply = completion.choices[0].message.content;
-    console.log(botReply)
     const botMessage = { sender: "bot", content: botReply };
     chat.messages.push(botMessage);
 
